@@ -10,6 +10,7 @@ project(save_img)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   roscpp
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions

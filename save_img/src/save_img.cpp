@@ -1,11 +1,12 @@
 #include <ros/ros.h>
 #include <termios.h>
 
-// #include <pcl_ros/point_cloud.h>
-// #include <pcl/io/ply_io.h>
-// #include <sensor_msgs/PointCloud2.h>
-// #include <pcl_conversions/pcl_conversions.h>
-// #include <pcl/ros/conversions.h>
+
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/ros/conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/io/ply_io.h>
 
 // #include <pcl/visualization/cloud_viewer.h>
 
@@ -22,10 +23,10 @@
 
 int num;
 
-// bool pc_flg;
+bool pc_flg;
 
 cv_bridge::CvImagePtr rgb_image;
-// sensor_msgs::PointCloud2ConstPtr pc_image;
+sensor_msgs::PointCloud2ConstPtr pc_image;
 
 //pcl::visualization::CloudViewer viewerr("Simple Cloud Viewerr");
 
@@ -69,23 +70,25 @@ char getch()
 	return (buff);
 }
 
-// void get_pc(const sensor_msgs::PointCloud2ConstPtr& pc_msg)
-// {
-//   pc_flg = true;
-//   pc_image = pc_msg;
-// }
+void get_pc(const sensor_msgs::PointCloud2ConstPtr& pc_msg)
+{
+   pc_flg = true;
+   pc_image = pc_msg;
+//    std::cout << "get pc" << std::endl;
+}
 
 void get_rgb(const sensor_msgs::ImageConstPtr& rgb_msg)
 {
-  rgb_image = cv_bridge::toCvCopy(rgb_msg, sensor_msgs::image_encodings::BGR8);
+   rgb_image = cv_bridge::toCvCopy(rgb_msg, sensor_msgs::image_encodings::BGR8);
+//    std::cout <<"get rgb" << std::endl;
 
-//   if(pc_flg == false) return;
+   if(pc_flg == false) return;
 
-//   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-//   pcl::fromROSMsg(*pc_image, *cloud);
+   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+   pcl::fromROSMsg(*pc_image, *cloud);
 
-  /*pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_RGB(new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::copyPointCloud(*cloud,*cloud_RGB);*/
+//    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_RGB(new pcl::PointCloud<pcl::PointXYZRGB>);
+//    pcl::copyPointCloud(*cloud,*cloud_RGB);
 
   int c = getch();   // call your non-blocking input function
   if (c == 's')
@@ -93,14 +96,14 @@ void get_rgb(const sensor_msgs::ImageConstPtr& rgb_msg)
     std::ostringstream num_str;
     num_str << num;
 
-    std::string rgb_str = "/home/kist/workspace/" + num_str.str() + "_rgb.png";
-    // std::string pc_str = "/workspace/" + num_str.str() + "_xyz.ply";
-	//std::string pc_rgb_str = "/home/kist/workspace/" + num_str.str() + "_rgb.ply";
+    std::string rgb_str = "/home/plaif/workspace/data/rgb/" + num_str.str() + "_rgb.png";
+    std::string pc_str = "/home/plaif/workspace/data/Pointclouds/" + num_str.str() + "_xyz.ply";
+    // std::string pc_rgb_str = "/home/plaif/workspace/data/PointcloudsWithRGB/" + num_str.str() + "_xyzrgb.ply";
     cv::imwrite(rgb_str,rgb_image->image);
 
-    // pcl::PLYWriter writer;
-    // writer.write(pc_str,*cloud);
-	//writer.write(pc_rgb_str,*cloud_RGB);
+    pcl::PLYWriter writer;
+    writer.write(pc_str,*cloud);
+    // writer.write(pc_rgb_str,*cloud_RGB);
 
 	std::cout << "-------------- SAVE ! ------------------" << num << " -----------" << std::endl;
     num++;
@@ -117,9 +120,9 @@ int main (int argc, char** argv)
   ros::NodeHandle nh;
   
   num = 0;	
-//   pc_flg = false;
+  pc_flg = false;
   
-//   ros::Subscriber sub3 = nh.subscribe ("pc_img", 1, get_pc);
+  ros::Subscriber sub3 = nh.subscribe ("pc_img", 1, get_pc);
   ros::Subscriber sub = nh.subscribe ("rgb_img", 1, get_rgb);
 
   ros::spin();
